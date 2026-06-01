@@ -1,0 +1,6 @@
+.vscode/**
+*.code-workspace
+.git/**
+.gitignore
+**/.DS_Store
+**/Thumbs.db
