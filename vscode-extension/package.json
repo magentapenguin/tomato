@@ -1,9 +1,9 @@
 {
   "name": "tomato-language-support",
-  "displayName": "Tomato Language Support",
+  "displayName": "Tomato Language",
   "description": "Syntax highlighting support for the cursed Tomato programming language.",
   "version": "0.0.1",
-  "publisher": "local",
+  "publisher": "magentapenguin",
   "license": "MIT",
   "keywords": [
     "tomato",
@@ -24,7 +24,7 @@
   "bugs": {
     "url": "https://github.com/magentapenugin/tomato/issues"
   },
-  "homepage": "https://github.com/magentapenguin/tomato/tree/master/vscode-extension",
+  "homepage": "https://github.com/magentapenguin/tomato/tree/master/vscode-extension#readme",
   "main": "./extension.js",
   "contributes": {
     "languages": [
