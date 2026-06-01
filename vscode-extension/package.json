@@ -1,0 +1,36 @@
+{
+  "name": "tomato-language-support",
+  "displayName": "Tomato Language Support",
+  "description": "Syntax highlighting support for the cursed Tomato programming language.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "tomato",
+        "aliases": [
+          "Tomato",
+          "tomato"
+        ],
+        "extensions": [
+          ".tomato"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tomato",
+        "scopeName": "source.tomato",
+        "path": "./syntaxes/tomato.tmLanguage.json"
+      }
+    ]
+  }
+}

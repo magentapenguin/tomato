@@ -1,0 +1,23 @@
+import "utils.tomato";
+
+var x;
+assign x = (5 + 3) * 2;
+assign 5 = 10;
+
+where x > 10 do {
+  print "x is greater than 10";
+}
+
+loop 3 do {
+  print "Hello", "Tomato";
+}
+
+function add(a, b) {
+  return a + b;
+}
+
+export function mul(a, b) {
+  return a * b;
+}
+
+call add(5, 3);

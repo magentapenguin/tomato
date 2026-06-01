@@ -1,0 +1,4 @@
+// Shared helpers for imported sample files.
+function noop() {
+  return null;
+}
