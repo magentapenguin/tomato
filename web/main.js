@@ -19,6 +19,30 @@ clearBtn.addEventListener("click", () => {
   outputEl.textContent = "";
 });
 
+codeEl.addEventListener("input", () => {
+    // set hash
+    const code = codeEl.value;
+    if (code) {
+        const encoded = btoa(unescape(encodeURIComponent(code)));
+        window.location.hash = encoded;
+    } else {
+        history.replaceState(null, null, " ");
+    }
+});
+
+// Load code from hash on page load
+window.addEventListener("load", () => {
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+        try {
+            const decoded = decodeURIComponent(escape(atob(hash)));
+            codeEl.value = decoded;
+        } catch (error) {
+            console.error("Failed to decode code from URL hash:", error);
+        }
+    }
+});
+
 async function loadText(url) {
   const response = await fetch(url);
   if (!response.ok) {
