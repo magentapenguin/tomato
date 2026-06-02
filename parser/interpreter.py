@@ -97,8 +97,11 @@ class Interpreter:
             if target.get("type") == "Identifier":
                 env.assign_or_define(target["name"], value)
             else:
-                target_value = self.evaluate_expression(target, env)
-                self.cursed_assignments[repr(target_value)] = value
+                target_value = self.evaluate_expression(target, env, resolve_cursed=False)
+                stored_value = value
+                if isinstance(stored_value, int) and not isinstance(stored_value, bool):
+                    stored_value = float(stored_value)
+                self.cursed_assignments[repr(target_value)] = stored_value
             return
 
         if stmt_type == "VarDeclaration":
@@ -167,39 +170,55 @@ class Interpreter:
         for statement in block.get("body", []):
             self.execute_statement(statement, env)
 
-    def evaluate_expression(self, expr: dict[str, Any], env: Environment) -> Any:
+    def evaluate_expression(
+        self,
+        expr: dict[str, Any],
+        env: Environment,
+        resolve_cursed: bool = True,
+    ) -> Any:
         expr_type = expr.get("type")
 
         if expr_type == "NumberLiteral":
-            return expr["value"]
+            return self._maybe_cursed(expr["value"], resolve_cursed)
         if expr_type == "StringLiteral":
-            return expr["value"]
+            return self._maybe_cursed(expr["value"], resolve_cursed)
         if expr_type == "ListLiteral":
-            return [self.evaluate_expression(item, env) for item in expr["elements"]]
+            value = [
+                self.evaluate_expression(item, env, resolve_cursed=resolve_cursed)
+                for item in expr["elements"]
+            ]
+            return self._maybe_cursed(value, resolve_cursed)
         if expr_type == "BooleanLiteral":
-            return expr["value"]
+            return self._maybe_cursed(expr["value"], resolve_cursed)
         if expr_type == "NullLiteral":
-            return None
+            return self._maybe_cursed(None, resolve_cursed)
         if expr_type == "Identifier":
-            return env.get(expr["name"])
+            value = env.get(expr["name"])
+            return self._maybe_cursed(value, resolve_cursed)
         if expr_type == "GroupingExpression":
-            return self.evaluate_expression(expr["expression"], env)
+            value = self.evaluate_expression(expr["expression"], env, resolve_cursed=resolve_cursed)
+            return self._maybe_cursed(value, resolve_cursed)
         if expr_type == "UnaryExpression":
             operator = expr["operator"]
-            operand = self.evaluate_expression(expr["operand"], env)
+            operand = self.evaluate_expression(expr["operand"], env, resolve_cursed=resolve_cursed)
             if operator == "-":
-                return -self._to_number(operand)
+                return self._maybe_cursed(-self._to_number(operand), resolve_cursed)
             raise TomatoRuntimeError(f"Unsupported unary operator: {operator}")
         if expr_type == "BinaryExpression":
-            return self._eval_binary(expr, env)
+            return self._maybe_cursed(self._eval_binary(expr, env, resolve_cursed), resolve_cursed)
         if expr_type == "CallExpression":
-            return self._eval_call(expr, env)
+            return self._maybe_cursed(self._eval_call(expr, env, resolve_cursed), resolve_cursed)
 
         raise TomatoRuntimeError(f"Unsupported expression type: {expr_type}")
 
-    def _eval_binary(self, expr: dict[str, Any], env: Environment) -> Any:
-        left = self.evaluate_expression(expr["left"], env)
-        right = self.evaluate_expression(expr["right"], env)
+    def _eval_binary(
+        self,
+        expr: dict[str, Any],
+        env: Environment,
+        resolve_cursed: bool,
+    ) -> Any:
+        left = self.evaluate_expression(expr["left"], env, resolve_cursed=resolve_cursed)
+        right = self.evaluate_expression(expr["right"], env, resolve_cursed=resolve_cursed)
         operator = expr["operator"]
 
         if operator == "+":
@@ -238,10 +257,18 @@ class Interpreter:
 
         raise TomatoRuntimeError(f"Unsupported binary operator: {operator}")
 
-    def _eval_call(self, call_expr: dict[str, Any], env: Environment) -> Any:
+    def _eval_call(
+        self,
+        call_expr: dict[str, Any],
+        env: Environment,
+        resolve_cursed: bool = True,
+    ) -> Any:
         callee_name = call_expr["callee"]
         callee = env.get(callee_name)
-        args = [self.evaluate_expression(arg, env) for arg in call_expr.get("args", [])]
+        args = [
+            self.evaluate_expression(arg, env, resolve_cursed=resolve_cursed)
+            for arg in call_expr.get("args", [])
+        ]
 
         if isinstance(callee, TomatoFunction):
             if len(args) != len(callee.params):
@@ -264,6 +291,11 @@ class Interpreter:
                 raise TomatoRuntimeError(f"Invalid arguments for {callee_name}: {exc}") from exc
 
         raise TomatoRuntimeError(f"{callee_name} is not callable")
+
+    def _maybe_cursed(self, value: Any, resolve_cursed: bool) -> Any:
+        if not resolve_cursed:
+            return value
+        return self.cursed_assignments.get(repr(value), value)
 
     def _register_stdlib(self) -> None:
         self.globals.define("list", lambda *args: list(args))

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tomato Playground</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1>🍅 Tomato Playground</h1>
+        <p>Run Tomato programs in your browser using Pyodide.</p>
+      </header>
+
+      <section class="panel editor-panel">
+        <label for="code">Tomato code</label>
+        <textarea id="code" spellcheck="false">assign values = [1, 2, 3];
+call push(values, 4);
+print "values:", values;
+print "len:", len(values);
+input "What is your name? " into name;
+print "hello", name;</textarea>
+        <div class="button-row">
+          <button id="runBtn">Run</button>
+          <button id="clearBtn" class="secondary">Clear output</button>
+        </div>
+      </section>
+
+      <section class="panel output-panel">
+        <label for="output">Output</label>
+        <pre id="output"></pre>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"></script>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

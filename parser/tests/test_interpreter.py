@@ -16,6 +16,13 @@ print x;
 
         self.assertEqual(output.getvalue(), "16.0\n")
 
+    def test_number_assignment(self) -> None:
+        source = """assign 4 = 10;
+        print 4;"""
+        output = io.StringIO()
+        interpret_source(source, output=output)
+        self.assertEqual(output.getvalue(), "10.0\n")
+
     def test_cursed_string_number_conversion(self) -> None:
         source = """
 assign x = "a" + 1;

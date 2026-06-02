@@ -1,1 +1,21 @@
-var list;
+assign values = [1, 2, 3];
+print "initial:", values;
+
+call push(values, 4);
+print "after push:", values;
+
+print "len:", len(values);
+print "get index 1:", get(values, 1);
+
+call set(values, 0, 99);
+print "after set:", values;
+
+print "pop value:", pop(values);
+print "after pop:", values;
+
+assign made = list("a", "b", "c");
+print "made:", made;
+
+print "type(values):", type(values);
+print "str(27):", str(27);
+print "num(\"aa\"):", num("aa");

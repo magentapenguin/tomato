@@ -43,7 +43,7 @@ TOKEN_PATTERN = re.compile(
     (?P<COMMENT>//[^\n]*)
     |(?P<NUMBER>\d+(?:\.\d+)?)
     |(?P<STRING>"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')
-    |(?P<IDENT>[A-Za-z_][A-Za-z0-9_]*)
+    |(?P<IDENT>(?:[A-Za-z_]|[\U0001F300-\U0001FAFF])(?:[A-Za-z0-9_]|[\U0001F300-\U0001FAFF\u200D\uFE0F])*)
     |(?P<SYMBOL>==|!=|<=|>=|[+\-*/<>=(),;{}\[\]])
     |(?P<NEWLINE>\n)
     |(?P<SKIP>[ \t\r]+)

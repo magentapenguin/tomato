@@ -12,6 +12,20 @@ class TomatoParserTests(unittest.TestCase):
         self.assertEqual(stmt["target"]["type"], "NumberLiteral")
         self.assertEqual(stmt["target"]["value"], 5)
         self.assertEqual(stmt["value"]["value"], 10)
+    
+    def test_emoji_in_variable_names(self) -> None:
+        tree = parse_source("var 🍅; assign 🍅 = 42;")
+        decl_stmt = tree["body"][0]
+        assign_stmt = tree["body"][1]
+
+        self.assertEqual(decl_stmt["type"], "VarDeclaration")
+        self.assertEqual(decl_stmt["name"], "🍅")
+
+        self.assertEqual(assign_stmt["type"], "AssignStatement")
+        self.assertEqual(assign_stmt["target"]["type"], "Identifier")
+        self.assertEqual(assign_stmt["target"]["name"], "🍅")
+        self.assertEqual(assign_stmt["value"]["type"], "NumberLiteral")
+        self.assertEqual(assign_stmt["value"]["value"], 42)
 
     def test_function_and_call(self) -> None:
         source = """

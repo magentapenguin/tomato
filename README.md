@@ -96,11 +96,43 @@ Tomato includes built-ins available as callable functions:
 - `str(value)`: convert value to string using Tomato conversions
 - `num(value)`: convert value to number using Tomato conversions
 
+For full signatures, behavior notes, and examples, see [`STDLIB.md`](./STDLIB.md).
+
 ### Run a Tomato program
 
 From the project root:
 
 - `python -m parser.run parser/examples/sample.tomato`
+
+### REPL
+
+You can run an interactive Tomato REPL:
+
+- `python -m parser.repl`
+
+REPL commands:
+
+- `:help` shows commands
+- `:load <path>` executes a `.tomato` file
+- `:reset` clears interpreter state
+- `:quit` exits
+
+## Pyodide Website Playground
+
+A browser playground is available in `web/` and runs the Python interpreter with Pyodide.
+
+### Run locally
+
+From the project root, start a static server and open `web/index.html`:
+
+- `python -m http.server 8000`
+
+Then visit <http://localhost:8000/web/>.
+
+Notes:
+
+- `input` statements use browser prompt dialogs.
+- The site loads local parser/interpreter Python files directly from this repo.
 
 ## VS Code Syntax Extension
 
