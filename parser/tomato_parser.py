@@ -46,7 +46,7 @@ TOKEN_PATTERN = re.compile(
     |(?P<NUMBER>\d+(?:\.\d+)?)
     |(?P<STRING>"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')
     |(?P<IDENT>(?:[A-Za-z_]|[\U0001F300-\U0001FAFF])(?:[A-Za-z0-9_]|[\U0001F300-\U0001FAFF\u200D\uFE0F])*)
-    |(?P<SYMBOL>==|!=|<=|>=|[+\-*/<>=(),;{}\[\]])
+    |(?P<SYMBOL>==|!=|<=|>=|[+\-*/<>=(),;{}.\[\]])
     |(?P<NEWLINE>\n)
     |(?P<SKIP>[ \t\r]+)
     |(?P<MISMATCH>.)
@@ -361,7 +361,10 @@ class Parser:
         )
 
     def _parse_call_expression(self) -> dict[str, Any]:
-        callee = self._expect_kind("IDENT").value
+        callee_parts = [self._expect_kind("IDENT").value]
+        while self._match_value("."):
+            callee_parts.append(self._expect_kind("IDENT").value)
+        callee = ".".join(callee_parts)
         self._expect_value("(")
         args: list[dict[str, Any]] = []
         if not self._check_value(")"):

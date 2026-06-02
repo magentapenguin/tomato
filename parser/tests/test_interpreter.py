@@ -122,6 +122,7 @@ print x;
             module_file.write_text(
                 """
 export function add(a, b) { return a + b; }
+export function ping() { print 123; return null; }
 export assign meaning = 42;
 function hidden() { return 999; }
 """.strip(),
@@ -132,6 +133,7 @@ function hidden() { return 999; }
 import "mod.tomato" as stuff;
 print type(stuff);
 print stuff;
+call stuff.ping();
 """
             output = io.StringIO()
             interpreter = Interpreter(output=output)
@@ -141,6 +143,7 @@ print stuff;
             self.assertIn("meaning", output.getvalue())
             self.assertIn("add", output.getvalue())
             self.assertNotIn("hidden", output.getvalue())
+            self.assertIn("123", output.getvalue())
 
     def test_import_without_alias_injects_exports(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

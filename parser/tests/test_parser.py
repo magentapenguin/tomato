@@ -39,10 +39,12 @@ class TomatoParserTests(unittest.TestCase):
         source = """
 export function add(a, b) { return a + b; }
 import "utils.tomato" as stuff;
+    call stuff.add(1, 2);
 """
         tree = parse_source(source)
         export_stmt = tree["body"][0]
         import_stmt = tree["body"][1]
+        call_stmt = tree["body"][2]
 
         self.assertEqual(export_stmt["type"], "ExportStatement")
         self.assertEqual(export_stmt["statement"]["type"], "FunctionDeclaration")
@@ -51,6 +53,9 @@ import "utils.tomato" as stuff;
         self.assertEqual(import_stmt["type"], "ImportStatement")
         self.assertEqual(import_stmt["path"], "utils.tomato")
         self.assertEqual(import_stmt["alias"], "stuff")
+
+        self.assertEqual(call_stmt["type"], "CallStatement")
+        self.assertEqual(call_stmt["call"]["callee"], "stuff.add")
 
     def test_function_and_call(self) -> None:
         source = """

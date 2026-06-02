@@ -4,6 +4,7 @@
   "scopeName": "source.tomato",
   "patterns": [
     { "include": "#comments" },
+    { "include": "#import-alias" },
     { "include": "#strings" },
     { "include": "#keywords" },
     { "include": "#booleans" },
@@ -11,10 +12,25 @@
     { "include": "#numbers" },
     { "include": "#function-declaration" },
     { "include": "#function-call" },
+    { "include": "#member-access" },
     { "include": "#list-punctuation" },
     { "include": "#operators" }
   ],
   "repository": {
+    "import-alias": {
+      "patterns": [
+        {
+          "name": "meta.import.tomato",
+          "match": "\\b(import)\\s+(\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*')\\s+(as)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.control.tomato" },
+            "2": { "name": "string.quoted.tomato" },
+            "3": { "name": "keyword.control.tomato" },
+            "4": { "name": "variable.other.tomato" }
+          }
+        }
+      ]
+    },
     "comments": {
       "patterns": [
         {
@@ -85,7 +101,7 @@
       "patterns": [
         {
           "name": "meta.function.tomato",
-          "match": "\\b(function)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()",
+          "match": "\\b(function)\\s+([A-Za-z_][A-Za-z0-9_]*|-?\\d+(?:\\.\\d+)?|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|true|false|null)\\s*(?=\\()",
           "captures": {
             "1": { "name": "keyword.control.tomato" },
             "2": { "name": "entity.name.function.tomato" }
@@ -97,11 +113,19 @@
       "patterns": [
         {
           "name": "meta.function-call.tomato",
-          "match": "\\b(call)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()",
+          "match": "\\b(call)\\s+([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)\\s*(?=\\()",
           "captures": {
             "1": { "name": "keyword.control.tomato" },
             "2": { "name": "entity.name.function.tomato" }
           }
+        }
+      ]
+    },
+    "member-access": {
+      "patterns": [
+        {
+          "name": "punctuation.accessor.dot.tomato",
+          "match": "\\."
         }
       ]
     },

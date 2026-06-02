@@ -301,7 +301,7 @@ class Interpreter:
         resolve_cursed: bool = True,
     ) -> Any:
         callee_name = call_expr["callee"]
-        callee = env.get(callee_name)
+        callee = self._resolve_callee(callee_name, env)
         args = [
             self.evaluate_expression(arg, env, resolve_cursed=resolve_cursed)
             for arg in call_expr.get("args", [])
@@ -328,6 +328,19 @@ class Interpreter:
                 raise TomatoRuntimeError(f"Invalid arguments for {callee_name}: {exc}") from exc
 
         raise TomatoRuntimeError(f"{callee_name} is not callable")
+
+    def _resolve_callee(self, callee_name: str, env: Environment) -> Any:
+        parts = callee_name.split(".")
+        value = env.get(parts[0])
+
+        for part in parts[1:]:
+            if not isinstance(value, dict):
+                raise TomatoRuntimeError(f"Cannot access member {part!r} on non-module value")
+            if part not in value:
+                raise TomatoRuntimeError(f"Undefined member {part!r} in module namespace")
+            value = value[part]
+
+        return value
 
     def _maybe_cursed(self, value: Any, resolve_cursed: bool) -> Any:
         if not resolve_cursed:
