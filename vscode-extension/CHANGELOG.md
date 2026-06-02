@@ -2,6 +2,10 @@
 
 All notable changes to this extension will be documented in this file.
 
+## 0.0.3
+
+- Update syntax again
+
 ## 0.0.2
 
 - Update syntax highlighting for new keywords and types
