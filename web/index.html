@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tomato Playground</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github-dark.min.css"
+    />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍅</text></svg>">
   </head>
   <body>
     <main class="container">
@@ -15,12 +20,19 @@
 
       <section class="panel editor-panel">
         <label for="code">Tomato code</label>
-        <textarea id="code" spellcheck="false">assign values = [1, 2, 3];
+        <label class="inline-toggle" for="highlightToggle">
+          <input id="highlightToggle" type="checkbox" />
+          Optional syntax highlighting in editor
+        </label>
+        <div id="editorStack" class="editor-stack">
+          <pre id="highlightInput" class="highlight-input" aria-hidden="true"><code id="highlightCode" class="language-tomato"></code></pre>
+          <textarea id="code" spellcheck="false">assign values = [1, 2, 3];
 call push(values, 4);
 print "values:", values;
 print "len:", len(values);
 input "What is your name? " into name;
 print "hello", name;</textarea>
+        </div>
         <div class="button-row">
           <button id="runBtn">Run</button>
           <button id="clearBtn" class="secondary">Clear output</button>
@@ -34,6 +46,7 @@ print "hello", name;</textarea>
     </main>
 
     <script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
     <script type="module" src="./main.js"></script>
   </body>
 </html>

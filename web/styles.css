@@ -51,6 +51,19 @@ label {
   margin-bottom: 8px;
 }
 
+.inline-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.inline-toggle input {
+  width: auto;
+  margin: 0;
+}
+
 textarea,
 pre,
 input {
@@ -66,6 +79,51 @@ input {
 textarea {
   min-height: 240px;
   resize: vertical;
+}
+
+.editor-stack {
+  position: relative;
+  margin-top: 0;
+}
+
+.editor-stack textarea,
+.editor-stack .highlight-input {
+  min-height: 240px;
+  margin: 0;
+}
+
+.editor-stack textarea {
+  position: relative;
+  z-index: 2;
+  background: #10141c;
+}
+
+.editor-stack .highlight-input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: auto;
+  pointer-events: none;
+  border: 1px solid #2a3242;
+  border-radius: 10px;
+  padding: 12px;
+  background: #10141c;
+}
+
+.editor-stack .highlight-input code {
+  display: block;
+  min-height: 100%;
+  white-space: pre;
+}
+
+.editor-stack.highlight-input-enabled textarea {
+  color: transparent;
+  caret-color: var(--text);
+  background: transparent;
+}
+
+.editor-stack.highlight-input-enabled textarea::selection {
+  background: rgba(163, 173, 186, 0.35);
 }
 
 pre {

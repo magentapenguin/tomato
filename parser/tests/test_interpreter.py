@@ -81,6 +81,31 @@ print values;
 
         self.assertEqual(output.getvalue(), "3\n2\n3\nlist\n[99, 2]\n")
 
+    def test_unset_cursed_number_assignment(self) -> None:
+        source = """
+assign 4 = 10;
+print 4;
+unset 4;
+print 4;
+"""
+        output = io.StringIO()
+        interpret_source(source, output=output)
+
+        self.assertEqual(output.getvalue(), "10.0\n4\n")
+
+    def test_unset_identifier(self) -> None:
+        source = """
+assign x = 7;
+print x;
+unset x;
+assign x = 9;
+print x;
+"""
+        output = io.StringIO()
+        interpret_source(source, output=output)
+
+        self.assertEqual(output.getvalue(), "7\n9\n")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -20,6 +20,7 @@ class Token:
 
 KEYWORDS = {
     "assign",
+    "unset",
     "print",
     "input",
     "into",
@@ -112,6 +113,8 @@ class Parser:
     def parse_statement(self) -> dict[str, Any]:
         if self._match_keyword("assign"):
             return self._parse_assign()
+        if self._match_keyword("unset"):
+            return self._parse_unset()
         if self._match_keyword("var"):
             return self._parse_var()
         if self._match_keyword("print"):
@@ -144,6 +147,11 @@ class Parser:
         value = self.parse_expression(stop_at={";"})
         self._expect_value(";")
         return {"type": "AssignStatement", "target": target, "value": value}
+
+    def _parse_unset(self) -> dict[str, Any]:
+        target = self.parse_expression(stop_at={";"})
+        self._expect_value(";")
+        return {"type": "UnsetStatement", "target": target}
 
     def _parse_var(self) -> dict[str, Any]:
         name = self._expect_kind("IDENT").value

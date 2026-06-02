@@ -70,6 +70,20 @@ assign b = list(4, 5);
         self.assertEqual(list_keyword_stmt["value"]["type"], "ListLiteral")
         self.assertEqual(len(list_keyword_stmt["value"]["elements"]), 2)
 
+    def test_unset_syntax(self) -> None:
+        source = """
+assign 4 = 10;
+unset 4;
+var x;
+unset x;
+"""
+        tree = parse_source(source)
+
+        self.assertEqual(tree["body"][1]["type"], "UnsetStatement")
+        self.assertEqual(tree["body"][1]["target"]["type"], "NumberLiteral")
+        self.assertEqual(tree["body"][3]["type"], "UnsetStatement")
+        self.assertEqual(tree["body"][3]["target"]["type"], "Identifier")
+
 
 if __name__ == "__main__":
     unittest.main()

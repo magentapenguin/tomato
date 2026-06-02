@@ -14,6 +14,7 @@ Tomato has a simple syntax:
 - Statements end with a semicolon (`;`)
 - Variables are declared with the `assign` keyword (e.g. `assign x = 5;`)
 - You can assign to anything (e.g. `assign 5 = 10;`)
+- You can remove assignments with `unset` (e.g. `unset x;` or `unset 5;`)
 - You can use basic arithmetic operators (`+`, `-`, `*`, `/`) and parentheses for grouping (e.g. `assign x = (5 + 3) * 2;`)
 - You can use the `print` keyword to output values (e.g. `print x;`) or (e.g. `print "52" "*" "2";`)
 - You can use the `where` keyword like an `if` statement (e.g. `where x > 10 do { print "x is greater than 10"; }`)
@@ -74,7 +75,7 @@ Tomato now also has an interpreter runtime under `parser/interpreter.py`.
 
 ### Runtime behavior
 
-- Executes statements in order (`assign`, `var`, `print`, `input`, `where`, `loop`, `function`, `return`, `call`, `import`).
+- Executes statements in order (`assign`, `unset`, `var`, `print`, `input`, `where`, `loop`, `function`, `return`, `call`, `import`).
 - Supports function declarations and calls with lexical scope.
 - Supports list literals (`[1, 2, 3]`) and `list(...)` expressions.
 - Supports cursed assignment to non-identifiers by storing those writes internally.
@@ -133,6 +134,7 @@ Notes:
 
 - `input` statements use browser prompt dialogs.
 - The site loads local parser/interpreter Python files directly from this repo.
+- Optional in-editor syntax highlighting is available via a toggle in the editor panel.
 
 ## VS Code Syntax Extension
 

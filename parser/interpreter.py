@@ -39,6 +39,13 @@ class Environment:
             raise TomatoRuntimeError(f"Undefined variable: {name}")
         return env.values[name]
 
+    def unset(self, name: str) -> bool:
+        env = self._resolve(name)
+        if env is None:
+            return False
+        del env.values[name]
+        return True
+
     def _resolve(self, name: str) -> Environment | None:
         if name in self.values:
             return self
@@ -102,6 +109,15 @@ class Interpreter:
                 if isinstance(stored_value, int) and not isinstance(stored_value, bool):
                     stored_value = float(stored_value)
                 self.cursed_assignments[repr(target_value)] = stored_value
+            return
+
+        if stmt_type == "UnsetStatement":
+            target = statement["target"]
+            if target.get("type") == "Identifier":
+                env.unset(target["name"])
+            else:
+                target_value = self.evaluate_expression(target, env, resolve_cursed=False)
+                self.cursed_assignments.pop(repr(target_value), None)
             return
 
         if stmt_type == "VarDeclaration":

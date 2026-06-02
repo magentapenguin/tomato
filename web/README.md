@@ -8,6 +8,15 @@ This folder contains a browser playground that runs Tomato using Pyodide.
 - `styles.css`: styling
 - `main.js`: Pyodide bootstrap + execution bridge
 
+## Optional syntax highlighting
+
+The editor includes an optional **syntax highlighting in-editor** toggle.
+
+- Keep it off for plain editing.
+- Turn it on to render highlighted Tomato code directly in the input area.
+
+This uses Highlight.js from CDN and falls back to plain text rendering if unavailable.
+
 ## Run locally
 
 From the repository root, run:

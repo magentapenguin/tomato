@@ -2,8 +2,60 @@ const codeEl = document.getElementById("code");
 const outputEl = document.getElementById("output");
 const runBtn = document.getElementById("runBtn");
 const clearBtn = document.getElementById("clearBtn");
+const highlightToggleEl = document.getElementById("highlightToggle");
+const editorStackEl = document.getElementById("editorStack");
+const highlightInputEl = document.getElementById("highlightInput");
+const highlightCodeEl = document.getElementById("highlightCode");
 
 let pyodide;
+let highlightEnabled = false;
+
+function setupTomatoHighlighter() {
+  if (!window.hljs) {
+    return;
+  }
+
+  window.hljs.registerLanguage("tomato", () => ({
+    name: "Tomato",
+    keywords: {
+      keyword:
+        "assign unset var print input into where do loop function return call import export list true false null",
+    },
+    contains: [
+      window.hljs.C_LINE_COMMENT_MODE,
+      window.hljs.QUOTE_STRING_MODE,
+      {
+        className: "number",
+        begin: /\b-?\d+(?:\.\d+)?\b/,
+      },
+    ],
+  }));
+}
+
+function updateHighlightPreview() {
+  if (!highlightEnabled) {
+    editorStackEl.classList.remove("highlight-input-enabled");
+    return;
+  }
+
+  editorStackEl.classList.add("highlight-input-enabled");
+
+  if (!window.hljs) {
+    highlightCodeEl.textContent = codeEl.value;
+    return;
+  }
+
+  const source = codeEl.value.endsWith("\n") ? `${codeEl.value} ` : codeEl.value;
+  const highlighted = window.hljs.highlight(source, { language: "tomato" }).value;
+  highlightCodeEl.innerHTML = highlighted;
+}
+
+function syncEditorScroll() {
+  highlightInputEl.scrollTop = codeEl.scrollTop;
+  highlightInputEl.scrollLeft = codeEl.scrollLeft;
+}
+
+setupTomatoHighlighter();
 
 function appendOutput(text) {
   outputEl.textContent += text;
@@ -20,27 +72,43 @@ clearBtn.addEventListener("click", () => {
 });
 
 codeEl.addEventListener("input", () => {
-    // set hash
-    const code = codeEl.value;
-    if (code) {
-        const encoded = btoa(unescape(encodeURIComponent(code)));
-        window.location.hash = encoded;
-    } else {
-        history.replaceState(null, null, " ");
-    }
+  // set hash
+  const code = codeEl.value;
+  if (code) {
+    const encoded = btoa(unescape(encodeURIComponent(code)));
+    window.location.hash = encoded;
+  } else {
+    history.replaceState(null, null, " ");
+  }
+
+  updateHighlightPreview();
+  syncEditorScroll();
+});
+
+codeEl.addEventListener("scroll", () => {
+  syncEditorScroll();
+});
+
+highlightToggleEl.addEventListener("change", () => {
+  highlightEnabled = highlightToggleEl.checked;
+  updateHighlightPreview();
+  syncEditorScroll();
 });
 
 // Load code from hash on page load
 window.addEventListener("load", () => {
-    const hash = window.location.hash.slice(1);
-    if (hash) {
-        try {
-            const decoded = decodeURIComponent(escape(atob(hash)));
-            codeEl.value = decoded;
-        } catch (error) {
-            console.error("Failed to decode code from URL hash:", error);
-        }
+  const hash = window.location.hash.slice(1);
+  if (hash) {
+    try {
+      const decoded = decodeURIComponent(escape(atob(hash)));
+      codeEl.value = decoded;
+    } catch (error) {
+      console.error("Failed to decode code from URL hash:", error);
     }
+  }
+
+  updateHighlightPreview();
+  syncEditorScroll();
 });
 
 async function loadText(url) {

@@ -2,7 +2,7 @@
   "name": "tomato-language-support",
   "displayName": "Tomato Language",
   "description": "Syntax highlighting support for the cursed Tomato programming language.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "magentapenguin",
   "license": "MIT",
   "keywords": [
