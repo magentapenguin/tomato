@@ -24,6 +24,7 @@ KEYWORDS = {
     "print",
     "input",
     "into",
+    "as",
     "where",
     "do",
     "loop",
@@ -134,7 +135,7 @@ class Parser:
         if self._match_keyword("import"):
             return self._parse_import()
         if self._match_keyword("export"):
-            return self._parse_export()
+            return self._parse_export_statement()
 
         token = self.current
         raise TomatoParserError(
@@ -190,7 +191,7 @@ class Parser:
         return {"type": "LoopStatement", "count": count_expr, "body": body}
 
     def _parse_function_decl(self, exported: bool) -> dict[str, Any]:
-        name = self._expect_kind("IDENT").value
+        name = self._parse_function_name_token()
         self._expect_value("(")
         params: list[str] = []
         if not self._check_value(")"):
@@ -223,12 +224,26 @@ class Parser:
 
     def _parse_import(self) -> dict[str, Any]:
         path_token = self._expect_kind("STRING")
+        alias = None
+        if self._match_keyword("as"):
+            alias = self._expect_kind("IDENT").value
         self._expect_value(";")
-        return {"type": "ImportStatement", "path": _decode_string(path_token.value)}
+        return {"type": "ImportStatement", "path": _decode_string(path_token.value), "alias": alias}
 
-    def _parse_export(self) -> dict[str, Any]:
-        self._expect_keyword("function")
-        return self._parse_function_decl(exported=True)
+    def _parse_export_statement(self) -> dict[str, Any]:
+        if self._match_keyword("function"):
+            statement = self._parse_function_decl(exported=True)
+            return {"type": "ExportStatement", "statement": statement}
+        if self._match_keyword("assign"):
+            statement = self._parse_assign()
+            return {"type": "ExportStatement", "statement": statement}
+        if self._match_keyword("var"):
+            statement = self._parse_var()
+            return {"type": "ExportStatement", "statement": statement}
+        token = self.current
+        raise TomatoParserError(
+            f"Expected exportable declaration after 'export', got {token.value!r} at line {token.line}, column {token.column}"
+        )
 
     def _parse_block(self) -> dict[str, Any]:
         self._expect_value("{")
@@ -357,6 +372,29 @@ class Parser:
                 break
         self._expect_value(")")
         return {"type": "CallExpression", "callee": callee, "args": args}
+
+    def _parse_function_name_token(self) -> str:
+        token = self.current
+
+        if token.kind == "IDENT":
+            self.advance()
+            return token.value
+
+        if token.kind == "NUMBER":
+            self.advance()
+            return token.value
+
+        if token.kind == "STRING":
+            self.advance()
+            return _decode_string(token.value)
+
+        if token.kind == "KEYWORD" and token.value in {"true", "false", "null"}:
+            self.advance()
+            return token.value
+
+        raise TomatoParserError(
+            f"Function name must be an identifier or literal, got {token.kind} ({token.value!r}) at line {token.line}, column {token.column}"
+        )
 
     def _is_stopped(self, stop_at: set[str] | None) -> bool:
         return stop_at is not None and self.current.value in stop_at

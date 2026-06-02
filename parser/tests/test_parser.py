@@ -27,6 +27,31 @@ class TomatoParserTests(unittest.TestCase):
         self.assertEqual(assign_stmt["value"]["type"], "NumberLiteral")
         self.assertEqual(assign_stmt["value"]["value"], 42)
 
+    def test_function_declaration_to_anything(self) -> None:
+        tree = parse_source("function 5(a, b) { return a + b; }")
+        stmt = tree["body"][0]
+
+        self.assertEqual(stmt["type"], "FunctionDeclaration")
+        self.assertEqual(stmt["name"], "5")
+        self.assertEqual(stmt["params"], ["a", "b"])
+
+    def test_export_and_import_alias_syntax(self) -> None:
+        source = """
+export function add(a, b) { return a + b; }
+import "utils.tomato" as stuff;
+"""
+        tree = parse_source(source)
+        export_stmt = tree["body"][0]
+        import_stmt = tree["body"][1]
+
+        self.assertEqual(export_stmt["type"], "ExportStatement")
+        self.assertEqual(export_stmt["statement"]["type"], "FunctionDeclaration")
+        self.assertEqual(export_stmt["statement"]["name"], "add")
+
+        self.assertEqual(import_stmt["type"], "ImportStatement")
+        self.assertEqual(import_stmt["path"], "utils.tomato")
+        self.assertEqual(import_stmt["alias"], "stuff")
+
     def test_function_and_call(self) -> None:
         source = """
 function add(a, b) {

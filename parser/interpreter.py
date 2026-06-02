@@ -73,7 +73,9 @@ class Interpreter:
         self.input_provider = input_provider or input
         self.cursed_assignments: dict[str, Any] = {}
         self._dir_stack: list[Path] = [Path.cwd()]
-        self._imported_files: set[Path] = set()
+        self._module_cache: dict[Path, dict[str, Any]] = {}
+        self._module_loading: set[Path] = set()
+        self._export_collectors: list[dict[str, Any]] = []
         self._register_stdlib()
 
     def run_source(self, source: str, current_dir: Path | None = None) -> None:
@@ -87,7 +89,7 @@ class Interpreter:
             self._dir_stack.pop()
 
     def run_file(self, file_path: str | Path) -> None:
-        self._execute_file(Path(file_path), as_import=False)
+        self._execute_file(Path(file_path))
 
     def execute_program(self, program: dict[str, Any], env: Environment) -> None:
         if program.get("type") != "Program":
@@ -173,9 +175,28 @@ class Interpreter:
 
         if stmt_type == "ImportStatement":
             import_path = statement["path"]
+            alias = statement.get("alias")
             current_dir = self._dir_stack[-1]
             resolved = (current_dir / import_path).resolve()
-            self._execute_file(resolved, as_import=True)
+            exports = self._load_module_exports(resolved)
+
+            if alias is not None:
+                env.assign_or_define(alias, dict(exports))
+            else:
+                for name, value in exports.items():
+                    env.assign_or_define(name, value)
+
+            return
+
+        if stmt_type == "ExportStatement":
+            statement_to_export = statement["statement"]
+            self.execute_statement(statement_to_export, env)
+
+            if self._export_collectors:
+                exported_name = self._extract_export_name(statement_to_export)
+                if exported_name is None:
+                    raise TomatoRuntimeError("Unsupported export target")
+                self._export_collectors[-1][exported_name] = env.get(exported_name)
             return
 
         raise TomatoRuntimeError(f"Unsupported statement type: {stmt_type}")
@@ -372,6 +393,8 @@ class Interpreter:
             return "string"
         if isinstance(value, list):
             return "list"
+        if isinstance(value, dict):
+            return "module"
         if isinstance(value, TomatoFunction):
             return "function"
         if callable(value):
@@ -384,10 +407,28 @@ class Interpreter:
     def _stdlib_num(self, value: Any) -> float:
         return self._to_number(value)
 
-    def _execute_file(self, file_path: Path, as_import: bool) -> None:
+    def _execute_file(self, file_path: Path) -> None:
         resolved = file_path.resolve()
-        if as_import and resolved in self._imported_files:
-            return
+        if not resolved.exists():
+            raise TomatoRuntimeError(f"File not found: {resolved}")
+
+        source = resolved.read_text(encoding="utf-8")
+        program = parse_source(source)
+
+        self._dir_stack.append(resolved.parent)
+        try:
+            self.execute_program(program, self.globals)
+        finally:
+            self._dir_stack.pop()
+
+    def _load_module_exports(self, file_path: Path) -> dict[str, Any]:
+        resolved = file_path.resolve()
+
+        if resolved in self._module_cache:
+            return self._module_cache[resolved]
+
+        if resolved in self._module_loading:
+            raise TomatoRuntimeError(f"Circular import detected: {resolved}")
 
         if not resolved.exists():
             raise TomatoRuntimeError(f"Imported file not found: {resolved}")
@@ -395,12 +436,38 @@ class Interpreter:
         source = resolved.read_text(encoding="utf-8")
         program = parse_source(source)
 
-        self._imported_files.add(resolved)
+        module_env = Environment(parent=self.globals)
+        exports: dict[str, Any] = {}
+
+        self._module_loading.add(resolved)
         self._dir_stack.append(resolved.parent)
+        self._export_collectors.append(exports)
         try:
-            self.execute_program(program, self.globals)
+            self.execute_program(program, module_env)
         finally:
+            self._export_collectors.pop()
             self._dir_stack.pop()
+            self._module_loading.remove(resolved)
+
+        self._module_cache[resolved] = exports
+        return exports
+
+    def _extract_export_name(self, statement: dict[str, Any]) -> str | None:
+        stmt_type = statement.get("type")
+
+        if stmt_type == "FunctionDeclaration":
+            return statement["name"]
+
+        if stmt_type == "VarDeclaration":
+            return statement["name"]
+
+        if stmt_type == "AssignStatement":
+            target = statement["target"]
+            if target.get("type") == "Identifier":
+                return target["name"]
+            return None
+
+        return None
 
     def _to_number(self, value: Any) -> float:
         if isinstance(value, bool):

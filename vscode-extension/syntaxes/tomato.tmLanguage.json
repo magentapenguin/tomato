@@ -53,7 +53,7 @@
       "patterns": [
         {
           "name": "keyword.control.tomato",
-          "match": "\\b(assign|unset|print|input|into|where|do|loop|function|return|call|import|export|var|list)\\b"
+          "match": "\\b(assign|unset|print|input|into|as|where|do|loop|function|return|call|import|export|var|list)\\b"
         }
       ]
     },

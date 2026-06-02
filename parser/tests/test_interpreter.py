@@ -1,7 +1,9 @@
 import io
+from pathlib import Path
+import tempfile
 import unittest
 
-from parser.interpreter import interpret_source
+from parser.interpreter import Interpreter, interpret_source
 
 
 class TomatoInterpreterTests(unittest.TestCase):
@@ -34,6 +36,13 @@ print y;
         interpret_source(source, output=output)
 
         self.assertEqual(output.getvalue(), "aa\n26.0\n")
+
+    def test_function_declaration_to_anything(self) -> None:
+        source = "function 5(a, b) { return a + b; }"
+        output = io.StringIO()
+        interpret_source(source, output=output)
+
+        self.assertEqual(output.getvalue(), "")
 
     def test_function_call_and_return(self) -> None:
         source = """
@@ -105,6 +114,56 @@ print x;
         interpret_source(source, output=output)
 
         self.assertEqual(output.getvalue(), "7\n9\n")
+
+    def test_import_with_alias_uses_exports_only(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_dir = Path(tmp)
+            module_file = tmp_dir / "mod.tomato"
+            module_file.write_text(
+                """
+export function add(a, b) { return a + b; }
+export assign meaning = 42;
+function hidden() { return 999; }
+""".strip(),
+                encoding="utf-8",
+            )
+
+            source = """
+import "mod.tomato" as stuff;
+print type(stuff);
+print stuff;
+"""
+            output = io.StringIO()
+            interpreter = Interpreter(output=output)
+            interpreter.run_source(source, current_dir=tmp_dir)
+
+            self.assertIn("module", output.getvalue())
+            self.assertIn("meaning", output.getvalue())
+            self.assertIn("add", output.getvalue())
+            self.assertNotIn("hidden", output.getvalue())
+
+    def test_import_without_alias_injects_exports(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_dir = Path(tmp)
+            module_file = tmp_dir / "math.tomato"
+            module_file.write_text(
+                """
+export function add(a, b) { return a + b; }
+export assign value = 7;
+""".strip(),
+                encoding="utf-8",
+            )
+
+            source = """
+import "math.tomato";
+print add(3, 4);
+print value;
+"""
+            output = io.StringIO()
+            interpreter = Interpreter(output=output)
+            interpreter.run_source(source, current_dir=tmp_dir)
+
+            self.assertEqual(output.getvalue(), "7.0\n7\n")
 
 
 if __name__ == "__main__":

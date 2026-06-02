@@ -22,8 +22,9 @@ Tomato has a simple syntax:
 - You can use the `function` keyword to define functions (e.g. `function add(a, b) { return a + b; }`)
 - You can use the `return` keyword to return values from functions (e.g. `function add(a, b) { return a + b; }`)
 - You can use the `call` keyword to call functions (e.g. `call add(5, 3);`)
-- You can use the `import` keyword to import other Tomato files (e.g. `import "utils.tomato";`)
-- You can use the `export` keyword to export functions from a Tomato file (e.g. `export function add(a, b) { return a + b; }`)
+- You can use the `import` keyword to import exported symbols from other Tomato files (e.g. `import "utils.tomato";`)
+- You can import exports into a namespace using `as` (e.g. `import "utils.tomato" as utils;`)
+- You can use the `export` keyword to export declarations from a Tomato file (e.g. `export function add(a, b) { return a + b; }`, `export assign value = 42;`)
 - You can use the `var` keyword to declare variables without assigning a value (e.g. `var x;`)
 - You can use the `input` keyword to get user input (e.g. `input "Enter your name: " into name;`)
 - You can use the `list` keyword to create lists (e.g. `assign myList = list(1, 2, 3);`) or use list literals (e.g. `assign myList = [1, 2, 3];`)
@@ -75,10 +76,11 @@ Tomato now also has an interpreter runtime under `parser/interpreter.py`.
 
 ### Runtime behavior
 
-- Executes statements in order (`assign`, `unset`, `var`, `print`, `input`, `where`, `loop`, `function`, `return`, `call`, `import`).
+- Executes statements in order (`assign`, `unset`, `var`, `print`, `input`, `where`, `loop`, `function`, `return`, `call`, `import`, `export`).
 - Supports function declarations and calls with lexical scope.
 - Supports list literals (`[1, 2, 3]`) and `list(...)` expressions.
 - Supports cursed assignment to non-identifiers by storing those writes internally.
+- Supports module exports (`export function`, `export assign`, `export var`) and optional namespace imports (`import "file.tomato" as stuff;`).
 - Supports cursed conversions:
   - number to string: base-26 letters (`1 -> a`, `27 -> aa`)
   - string to number: inverse base-26 (`aa -> 27`)
@@ -93,7 +95,7 @@ Tomato includes built-ins available as callable functions:
 - `pop(listValue)`: pop and return last item
 - `get(listValue, index)`: get an item by index
 - `set(listValue, index, item)`: set an item and return the list
-- `type(value)`: returns `null`, `boolean`, `number`, `string`, `list`, `function`, or `builtin`
+- `type(value)`: returns `null`, `boolean`, `number`, `string`, `list`, `module`, `function`, or `builtin`
 - `str(value)`: convert value to string using Tomato conversions
 - `num(value)`: convert value to number using Tomato conversions
 

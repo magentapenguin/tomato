@@ -19,7 +19,7 @@ function setupTomatoHighlighter() {
     name: "Tomato",
     keywords: {
       keyword:
-        "assign unset var print input into where do loop function return call import export list true false null",
+        "assign unset var print input into as where do loop function return call import export list true false null",
     },
     contains: [
       window.hljs.C_LINE_COMMENT_MODE,

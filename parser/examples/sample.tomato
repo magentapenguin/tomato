@@ -21,3 +21,5 @@ export function mul(a, b) {
 }
 
 call add(5, 3);
+
+call noop();
